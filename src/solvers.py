@@ -7,13 +7,30 @@ import itertools
 
 MOVES = ['U', "U'", 'D', "D'", 'R', "R'", 'L', "L'", 'F', "F'", 'B', "B'"]
 
+def simplify_pair(a, b):
+    if a[0] != b[0]:
+        return [a, b]
+
+    if a == b + "'" or b == a + "'":
+        return []
+    if a == b:
+        return [a, a]
+    return [a, b]
 
 def generate_scrambled_cube(n_moves):
+    scramble = []
+    while len(scramble) < n_moves:
+        move = random.choice(MOVES)
+        if not scramble:
+            scramble.append(move)
+            continue
+
+        last = scramble.pop()
+        simplified = simplify_pair(last, move)
+        scramble.extend(simplified)
     cube = pc.Cube()
-    scramble = random.choices(MOVES, k=n_moves)
     cube.perform_algo(' '.join(scramble))
     return cube, scramble
-
 
 def bfs_solver(scrambled_cube):
     visited = set()
