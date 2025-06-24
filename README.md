@@ -21,11 +21,13 @@ Instale as dependências do projeto
 Com o objetivo de estudar as particularidades do desafio de resolver o Cubo de Rubik, temos alguns arquivos que servem como ponto de entrada para diferentes perspectivas.
 
 </br>Execute essa linha de comando para obter um cubo se resolvendo de forma visual e com possibilidade de interação.
+
 ````bash
     poetry run python run_solver_interface.py
 ````
 
 </br>Execute essa linha de comando para executar um script que roda um teste variando de 0 a N o número de embaralhamento e retornando métricas para os 3 algoritmos utilizados.
+
 ````bash
     poetry run python rubik_v3_otimizado.py
 ````
