@@ -2,7 +2,6 @@ import csv
 
 from src.solvers import a_star_solver, bfs_solver, generate_scrambled_cube, ids_solver
 
-# --- Execução principal ---
 MAX_MOVES = 5
 resultados = []
 
@@ -34,7 +33,6 @@ for n in range(1, MAX_MOVES + 1):
             'Fator Ramificação Média': f'{branching:.2f}' if branching else 'N/A'
         })
 
-# --- Exporta relatório CSV ---
 with open('relatorio_resultados.csv', mode='w', newline='', encoding='utf-8') as file:
     writer = csv.DictWriter(file, fieldnames=resultados[0].keys())
     writer.writeheader()
