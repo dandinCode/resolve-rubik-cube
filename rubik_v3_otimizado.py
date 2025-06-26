@@ -12,10 +12,8 @@ for n in range(1, MAX_MOVES + 1):
 
     for nome_alg, func in [('BFS', bfs_solver), ('IDS', ids_solver), ('A*', a_star_solver)]:
         print(f'\n[{nome_alg}]')
-        if nome_alg == 'IDS':
-            solution, tempo, mem, nodes, branching = func(scrambled_cube, max_depth=10)
-        else:
-            solution, tempo, mem, nodes, branching = func(scrambled_cube)
+
+        (solution, mem, nodes, branching),tempo = func(scrambled_cube)
 
         if solution:
             print(f'Solução ({len(solution)} passos): {solution}')

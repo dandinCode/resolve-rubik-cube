@@ -1,9 +1,9 @@
 import pycuber as pc
 from collections import deque
 import random
-import time
 import heapq
 import itertools
+from src.utils import timed
 
 MOVES = ['U', "U'", 'D', "D'", 'R', "R'", 'L', "L'", 'F', "F'", 'B', "B'"]
 
@@ -32,11 +32,11 @@ def generate_scrambled_cube(n_moves):
     cube.perform_algo(' '.join(scramble))
     return cube, scramble
 
+@timed
 def bfs_solver(scrambled_cube):
     visited = set()
     queue = deque()
     queue.append((scrambled_cube.copy(), []))
-    start_time = time.time()
     max_queue_size = 1
     nodes = 0
     total_branches = 0
@@ -53,9 +53,8 @@ def bfs_solver(scrambled_cube):
         nodes += 1
 
         if current_cube == pc.Cube():
-            end_time = time.time()
             avg_branching = total_branches / branching_points if branching_points else 0
-            return path, end_time - start_time, max_queue_size, nodes, avg_branching
+            return path, max_queue_size, nodes, avg_branching
 
         children = 0
         for move in MOVES:
@@ -67,11 +66,10 @@ def bfs_solver(scrambled_cube):
         total_branches += children
         branching_points += 1
 
-    return None, None, max_queue_size, nodes, 0
+    return None, max_queue_size, nodes, 0
 
-
+@timed
 def ids_solver(scrambled_cube, max_depth=10):
-    start_time = time.time()
     nodes = 0
     max_stack_size = 1
     total_branches = 0
@@ -110,11 +108,10 @@ def ids_solver(scrambled_cube, max_depth=10):
         visited = set()
         result = dls(scrambled_cube.copy(), [], depth, visited)
         if result is not None:
-            time_for_resolve = time.time() - start_time
             avg_branching = total_branches / branching_points if branching_points else 0
-            return result, time_for_resolve, max_stack_size, nodes, avg_branching
+            return result, max_stack_size, nodes, avg_branching
 
-    return None, None, max_stack_size, nodes, 0
+    return None, max_stack_size, nodes, 0
 
 
 def heuristic(cube):
@@ -129,12 +126,11 @@ def heuristic(cube):
                     count += 1
     return count
 
-
+@timed
 def a_star_solver(scrambled_cube):
     visited = set()
     heap = []
     counter = itertools.count()
-    start_time = time.time()
     nodes = 0
     max_heap_size = 1
     total_branches = 0
@@ -154,9 +150,8 @@ def a_star_solver(scrambled_cube):
         nodes += 1
 
         if current_cube == pc.Cube():
-            end_time = time.time()
             avg_branching = total_branches / branching_points if branching_points else 0
-            return path, end_time - start_time, max_heap_size, nodes, avg_branching
+            return path, max_heap_size, nodes, avg_branching
 
         children = 0
         for move in MOVES:
@@ -170,4 +165,4 @@ def a_star_solver(scrambled_cube):
         total_branches += children
         branching_points += 1
 
-    return None, None, max_heap_size, nodes, 0
+    return None, max_heap_size, nodes, 0

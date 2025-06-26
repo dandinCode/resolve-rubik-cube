@@ -5,7 +5,7 @@ from src.cube_interactive import Cube, InteractiveCube
 
 from src.solvers import a_star_solver,generate_scrambled_cube
 
-scrambled_cube, scramble_seq = generate_scrambled_cube(4)
+scrambled_cube, scramble_seq = generate_scrambled_cube(5)
 print("Scramble:", scramble_seq)
 
 cubo_visual = Cube(N=3)
@@ -17,8 +17,8 @@ for move in scramble_seq:
 def rodar_solver_em_thread(ax):
     time.sleep(1)
 
-    caminho, _, _, _, _ = a_star_solver(scrambled_cube)
-    print(caminho, _, _, _, _)
+    (caminho, _, _, _), duration = a_star_solver(scrambled_cube)
+    print(caminho)
     
     for move in caminho:
         print(f"Aplicando: {move}")
