@@ -3,7 +3,7 @@ from collections import deque
 import random
 import heapq
 import itertools
-from src.utils import timed
+from src.utils import Result, timed
 
 MOVES = ['U', "U'", 'D', "D'", 'R', "R'", 'L', "L'", 'F', "F'", 'B', "B'"]
 
@@ -33,7 +33,8 @@ def generate_scrambled_cube(n_moves):
     return cube, scramble
 
 @timed
-def bfs_solver(scrambled_cube):
+def bfs_solver(scrambled_cube:pc.Cube) -> Result:
+    """Algoritmo de busca em profundidade"""
     visited = set()
     queue = deque()
     queue.append((scrambled_cube.copy(), []))
@@ -54,7 +55,8 @@ def bfs_solver(scrambled_cube):
 
         if current_cube == pc.Cube():
             avg_branching = total_branches / branching_points if branching_points else 0
-            return path, max_queue_size, nodes, avg_branching
+            return Result(solution=path,memoria=max_queue_size,nos=nodes,avg_branching=avg_branching)
+
 
         children = 0
         for move in MOVES:
@@ -66,10 +68,10 @@ def bfs_solver(scrambled_cube):
         total_branches += children
         branching_points += 1
 
-    return None, max_queue_size, nodes, 0
+    return Result(solution=None,memoria=max_queue_size,nos=nodes,avg_branching=-1)
 
 @timed
-def ids_solver(scrambled_cube, max_depth=10):
+def ids_solver(scrambled_cube:pc.Cube, max_depth=10) -> Result:
     nodes = 0
     max_stack_size = 1
     total_branches = 0
@@ -109,12 +111,12 @@ def ids_solver(scrambled_cube, max_depth=10):
         result = dls(scrambled_cube.copy(), [], depth, visited)
         if result is not None:
             avg_branching = total_branches / branching_points if branching_points else 0
-            return result, max_stack_size, nodes, avg_branching
+            return Result(solution=result,memoria=max_stack_size,nos=nodes,avg_branching=avg_branching)
 
-    return None, max_stack_size, nodes, 0
+    return Result(solution=None,memoria=max_stack_size,nos=nodes,avg_branching=-1)
 
 
-def heuristic(cube):
+def heuristic(cube:pc.Cube)->int:
     goal = pc.Cube()
     count = 0
     for face in 'ULFRBD':
@@ -127,7 +129,7 @@ def heuristic(cube):
     return count
 
 @timed
-def a_star_solver(scrambled_cube):
+def a_star_solver(scrambled_cube:pc.Cube)-> Result:
     visited = set()
     heap = []
     counter = itertools.count()
@@ -151,7 +153,7 @@ def a_star_solver(scrambled_cube):
 
         if current_cube == pc.Cube():
             avg_branching = total_branches / branching_points if branching_points else 0
-            return path, max_heap_size, nodes, avg_branching
+            return Result(solution=path,memoria=max_heap_size,nos=nodes,avg_branching=avg_branching)
 
         children = 0
         for move in MOVES:
@@ -165,4 +167,4 @@ def a_star_solver(scrambled_cube):
         total_branches += children
         branching_points += 1
 
-    return None, max_heap_size, nodes, 0
+    return Result(solution=None,memoria=max_heap_size,nos=nodes,avg_branching=-1)
