@@ -3,7 +3,7 @@ from collections import deque
 import random
 import heapq
 import itertools
-from src.utils import Result, timed
+from src.utils import Result, State, is_opposite_move, timed
 
 MOVES = ['U', "U'", 'D', "D'", 'R', "R'", 'L', "L'", 'F', "F'", 'B', "B'"]
 
@@ -117,6 +117,7 @@ def ids_solver(scrambled_cube:pc.Cube, max_depth=10) -> Result:
 
 
 def heuristic(cube:pc.Cube)->int:
+    """Heurística que contabiliza quantos peças estão na posição errada."""
     goal = pc.Cube()
     count = 0
     for face in 'ULFRBD':
@@ -130,41 +131,42 @@ def heuristic(cube:pc.Cube)->int:
 
 @timed
 def a_star_solver(scrambled_cube:pc.Cube)-> Result:
-    visited = set()
     heap = []
-    counter = itertools.count()
-    nodes = 0
-    max_heap_size = 1
-    total_branches = 0
-    branching_points = 0
-
-    initial_h = heuristic(scrambled_cube)
-    heapq.heappush(heap, (initial_h, next(counter), 0, scrambled_cube.copy(), []))
+    nodes = total_branches = branching_points = 0
+    
+    state = State(
+        heuristic_pontos=heuristic(scrambled_cube),
+        cube=scrambled_cube.copy(),
+        path=[]
+    )
+    heapq.heappush(heap,state)
 
     while heap:
-        f, _, g, current_cube, path = heapq.heappop(heap)
-        state_str = str(current_cube)
-        max_heap_size = max(max_heap_size, len(heap))
+        state:State = heapq.heappop(heap)
 
-        if state_str in visited:
-            continue
-        visited.add(state_str)
         nodes += 1
 
-        if current_cube == pc.Cube():
+        if state.cube == pc.Cube():
             avg_branching = total_branches / branching_points if branching_points else 0
-            return Result(solution=path,memoria=max_heap_size,nos=nodes,avg_branching=avg_branching)
-
-        children = 0
+            return Result(solution=state.path,memoria=len(heap),nos=nodes,avg_branching=avg_branching)
+            
+        branches = 0
+        last_move = state.path[-1] if state.path else ""
         for move in MOVES:
-            new_cube = current_cube.copy()
+            if is_opposite_move(move,last_move):
+                continue
+            new_cube = state.cube.copy()
             new_cube.perform_algo(move)
-            new_path = path + [move]
-            h = heuristic(new_cube)
-            heapq.heappush(heap, (g + 1 + h, next(counter), g + 1, new_cube, new_path))
-            children += 1
+            new_path = state.path + [move]
 
-        total_branches += children
+            heapq.heappush(heap,State(
+                heuristic_pontos=heuristic(new_cube),
+                cube=new_cube,
+                path=new_path
+            ))
+            branches += 1
+
+        total_branches += branches
         branching_points += 1
-
-    return Result(solution=None,memoria=max_heap_size,nos=nodes,avg_branching=-1)
+        print(f"state: {state.path},State: {state}")
+    return Result(solution=None,memoria=len(heap),nos=nodes,avg_branching=-1)
