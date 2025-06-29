@@ -70,8 +70,8 @@ def bfs_solver(scrambled_cube:pc.Cube) -> Result:
 
     return Result(solution=None,memoria=max_queue_size,nos=nodes,avg_branching=-1)
 
-@timed
-def ids_solver(scrambled_cube:pc.Cube, max_depth=10) -> Result:
+@timed # IDS ANTIGO
+def ids_solver_old(scrambled_cube:pc.Cube, max_depth=10) -> Result:
     nodes = 0
     max_stack_size = 1
     total_branches = 0
@@ -106,15 +106,112 @@ def ids_solver(scrambled_cube:pc.Cube, max_depth=10) -> Result:
         branching_points += 1
         return None
 
+    # for depth in range(max_depth + 1):
+    #     visited = set()
+    #     result = dls(scrambled_cube.copy(), [], depth, visited)
+    #     if result is not None:
+    #         avg_branching = total_branches / branching_points if branching_points else 0
+    #         return Result(solution=result,memoria=max_stack_size,nos=nodes,avg_branching=avg_branching)
+
+    # return Result(solution=None,memoria=max_stack_size,nos=nodes,avg_branching=-1)
+
     for depth in range(max_depth + 1):
+        print(f"\n[IDS_OLD] Buscando com profundidade limite = {depth}...")
         visited = set()
         result = dls(scrambled_cube.copy(), [], depth, visited)
         if result is not None:
             avg_branching = total_branches / branching_points if branching_points else 0
-            return Result(solution=result,memoria=max_stack_size,nos=nodes,avg_branching=avg_branching)
+            return Result(
+                solution=result,
+                memoria=depth,
+                nos=nodes,
+                avg_branching=avg_branching
+            )
 
-    return Result(solution=None,memoria=max_stack_size,nos=nodes,avg_branching=-1)
+    # Caso não encontre solução após todas as profundidades
+    avg_branching = total_branches / branching_points if branching_points else 0
+    print(f"\n[IDS_OLD] Falhou ao encontrar solução até profundidade {max_depth}.")
+    print(f"[IDS_OLD] Nós expandidos: {nodes}")
+    print(f"[IDS_OLD] Fator de ramificação médio: {avg_branching:.2f}")
 
+    return Result(
+        solution=None,
+        memoria=max_depth,
+        nos=nodes,
+        avg_branching=avg_branching
+    )    
+
+@timed # IDS NOVO
+def ids_solver_new(scrambled_cube: pc.Cube, max_depth=10) -> Result:
+    nodes = 0
+    total_branches = 0
+    branching_points = 0
+
+    def dls(cube, path, depth):
+        nonlocal nodes, total_branches, branching_points
+
+        nodes += 1
+        if cube == pc.Cube():
+            return path
+
+        if depth == 0:
+            return None
+
+        children = 0
+        last_move = path[-1] if path else ""
+        for move in MOVES:
+            if is_opposite_move(move, last_move):
+                continue  # Evita desfazer o último movimento
+
+            new_cube = cube.copy()
+            new_cube.perform_algo(move)
+            result = dls(new_cube, path + [move], depth - 1)
+            children += 1
+
+            if result is not None:
+                return result
+
+        total_branches += children
+        branching_points += 1
+        return None
+
+    # for depth in range(max_depth + 1):
+    #     result = dls(scrambled_cube.copy(), [], depth)
+    #     if result is not None:
+    #         avg_branching = total_branches / branching_points if branching_points else 0
+    #         return Result(
+    #             solution=result,
+    #             memoria=depth,  # profundidade máxima usada = consumo de memória
+    #             nos=nodes,
+    #             avg_branching=avg_branching
+    #         )
+
+    # return Result(solution=None, memoria=max_depth, nos=nodes, avg_branching=-1)
+
+    for depth in range(max_depth + 1):
+        print(f"\n[IDS_NEW] Buscando com profundidade limite = {depth}...")  # mostra progresso
+        result = dls(scrambled_cube.copy(), [], depth)
+        if result is not None:
+            avg_branching = total_branches / branching_points if branching_points else 0
+            return Result(
+                solution=result,
+                memoria=depth,
+                nos=nodes,
+                avg_branching=avg_branching
+            )
+
+    # Se não encontrou solução após max_depth
+    avg_branching = total_branches / branching_points if branching_points else 0
+    print(f"\n[IDS_NEW] Falhou ao encontrar solução até profundidade {max_depth}.")
+    print(f"[IDS_NEW] Nós expandidos: {nodes}")
+    print(f"[IDS_NEW] Fator de ramificação médio: {avg_branching:.2f}")
+
+    return Result(
+        solution=None,
+        memoria=max_depth,
+        nos=nodes,
+        avg_branching=avg_branching
+    )
 
 def heuristic(cube:pc.Cube)->int:
     """Heurística que contabiliza quantos peças estão na posição errada."""
