@@ -35,35 +35,38 @@ def generate_scrambled_cube(n_moves):
 @timed
 def bfs_solver(scrambled_cube:pc.Cube) -> Result:
     """Algoritmo de busca em profundidade"""
-    visited = set()
-    queue = deque()
-    queue.append((scrambled_cube.copy(), []))
+    initial_node = (scrambled_cube.copy(), []) 
+    if scrambled_cube == pc.Cube():
+        return Result(solution=[], memoria=1, nos=0, avg_branching=0)
+
+    frontier = deque([initial_node])
+    reached = {str(scrambled_cube)}  
+
     max_queue_size = 1
     nodes = 0
     total_branches = 0
     branching_points = 0
 
-    while queue:
-        current_cube, path = queue.popleft()
-        state_str = str(current_cube)
-        max_queue_size = max(max_queue_size, len(queue))
-
-        if state_str in visited:
-            continue
-        visited.add(state_str)
+    while frontier:
+        state, path = frontier.popleft()
         nodes += 1
-
-        if current_cube == pc.Cube():
-            avg_branching = total_branches / branching_points if branching_points else 0
-            return Result(solution=path,memoria=max_queue_size,nos=nodes,avg_branching=avg_branching)
-
+        max_queue_size = max(max_queue_size, len(frontier))
 
         children = 0
         for move in MOVES:
-            new_cube = current_cube.copy()
-            new_cube.perform_algo(move)
-            queue.append((new_cube, path + [move]))
-            children += 1
+            new_state = state.copy()
+            new_state.perform_algo(move)
+            new_path = path + [move]
+            state_str = str(new_state)
+
+            if new_state == pc.Cube():
+                avg_branching = total_branches / branching_points if branching_points else 0
+                return Result(solution=new_path,memoria=max_queue_size,nos=nodes,avg_branching=avg_branching )
+
+            if state_str not in reached:
+                reached.add(state_str)
+                frontier.append((new_state, new_path))
+                children += 1
 
         total_branches += children
         branching_points += 1
